@@ -8,6 +8,76 @@
 #define UART_GPIO GPIOA
 #define BRateTime 105
 
+
+typedef enum{
+	Parity_Mode_NONE,
+	Parity_Mode_ODD,
+	Parity_Mode_EVENT
+}Parity_Mode;
+
+
+
+uint8_t Parity_Generate(uint8_t data, Parity_Mode Mode){
+	uint8_t count =0;
+	uint8_t data1 = data;
+	for(int i=0; i< 8; i++){
+		if(data1 & 0x01){
+			count++;
+		}
+		data1>>=1;
+	}
+	switch(Mode){
+		case Parity_Mode_NONE:
+			return data; 
+			break;
+		case Parity_Mode_ODD:
+			if(count%2){
+				return ((data<<1)|1);
+			} else {
+				return (data<<1);
+			}
+			break;
+		case Parity_Mode_EVENT:
+			if(!(count%2)){
+				return ((data<<1)|1);
+			} else {
+				return (data<<1);
+			}
+			break;
+		default:
+			return data;
+			break;
+	}
+}
+
+
+uint8_t Parity_Check(uint8_t data, Parity_Mode Mode){
+	uint8_t count =0;
+	for(int i=0; i< 8; i++){
+		if(data & 0x01){
+			count++;
+		}
+		data>>=1;
+	}
+	switch(Mode){
+		case Parity_Mode_NONE:
+			return 1; 
+			break;
+		case Parity_Mode_ODD:
+			return (count%2); 
+			break;
+		case Parity_Mode_EVENT:
+			return (!(count%2)); 
+			break;
+		default:
+			return 0;
+			break;
+	}
+}
+
+
+
+
 void delay_us(uint8_t timedelay)
 	{
 			TIM_SetCounter(TIM2,0);
@@ -89,15 +159,18 @@ unsigned char UART_Receive(void){
 		delay_us(BRateTime/2);
 		return DataValue;
 	}
-	//Xu li loi
+	
 }
 
 
 
 
-
+uint8_t data = 0x02;
 int main()
 	{
-		
-		
+		UART_Transmit(Parity_Generate(data, Parity_Mode_ODD));
+		while(1)
+		{
+			
+		}
 		}
